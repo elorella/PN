@@ -17,7 +17,8 @@ namespace PRDBIntegrationWebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ParkingRightRegistrationRequest request)
         {
-            var random = new Random(); 
+            var random = new Random();
+            // Publish ParkingRightRegisteredTopic for subscribers
             return StatusCode((int) HttpStatusCode.OK, random.Next(10,10000));
         }
     }

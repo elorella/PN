@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using AutoMapper;
 using Moq;
@@ -33,6 +34,24 @@ namespace ParkingRight.Domain.Tests
             await parkingRightProcessor.SaveParkingRight(new ParkingRightModel());
 
             repo.Verify(r => r.Add(It.IsAny<ParkingRightEntity>()), Times.Once);
+        }
+
+        [Fact(DisplayName = "PRDBIntegration shouldn't be triggered if repository fails to save parking right.")]
+        public async Task SaveParkingRightShouldntBeTriggered()
+        {
+            var repo = new Mock<IParkingRightRepository>();
+            var integrationProcess = new Mock<IPrdbIntegrationProcessor>();
+
+            repo.Setup(m => m.Add(It.IsAny<ParkingRightEntity>()))
+                .Returns(() => Task.FromResult(false));
+
+            var parkingRightProcessor =
+                new ParkingRightProcessor(repo.Object, new Mock<IMapper>().Object, integrationProcess.Object);
+
+            await Assert.ThrowsAsync<Exception>(async () =>
+                await parkingRightProcessor.SaveParkingRight(new ParkingRightModel()));
+
+            integrationProcess.Verify(r => r.Register(It.IsAny<ParkingRegistration>()), Times.Never);
         }
     }
 }

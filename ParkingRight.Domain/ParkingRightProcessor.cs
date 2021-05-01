@@ -37,6 +37,7 @@ namespace ParkingRight.Domain
                 throw new Exception("Failed to create a parking right.");
             }
 
+            // Instead of Http, communication can be done over SQS; see architectural diagram 
             var registrationRequest = _mapper.Map<ParkingRegistration>(parkingRight);
             var registrationId = await _prdbIntegrationProcessor.Register(registrationRequest);
             if (!registrationId.HasValue)
@@ -45,9 +46,6 @@ namespace ParkingRight.Domain
             }
 
            
-
-            // Publish notification 
-
             parkingRight.ParkingRightKey = entity.ParkingRightKey;
             return parkingRight;
         }

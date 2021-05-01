@@ -3,6 +3,7 @@ using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -34,19 +35,31 @@ namespace ParkingRight.WebApi
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "ParkingRight API", Version = "v1"});
             });
             
-            RegisterSubmodules(services);
-            services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
-
             #region AWS
-
             var awsOptions = Configuration.GetAWSOptions();
             awsOptions.Region = RegionEndpoint.EUCentral1;
+
+            var dynamoDbConfig = Configuration.GetSection("DynamoDb");
+            var runLocalDynamoDb = dynamoDbConfig.GetValue<bool?>("LocalMode");
+            if (runLocalDynamoDb.HasValue && runLocalDynamoDb.Value)
+            {
+                awsOptions.Credentials = new BasicAWSCredentials("DUMMYIDEXAMPLE", "DUMMYEXAMPLEKEY");
+                var clientConfig = new AmazonDynamoDBConfig{ServiceURL = dynamoDbConfig.GetValue<string>("LocalServiceUrl")};
+                services.AddSingleton<IAmazonDynamoDB>(sp => new AmazonDynamoDBClient(clientConfig));
+                Console.WriteLine("DB is running locally.");
+            }
+            else
+            {
+                services.AddAWSService<IAmazonDynamoDB>();
+            }
+
             services.AddDefaultAWSOptions(awsOptions);
-            services.AddAWSService<IAmazonDynamoDB>();
-            services.AddScoped<IDynamoDBContext>(
-                provider => new DynamoDBContext(provider.GetService<IAmazonDynamoDB>()));
+            services.AddScoped<IDynamoDBContext>(provider => new DynamoDBContext(provider.GetService<IAmazonDynamoDB>()));
 
             #endregion
+
+            RegisterSubmodules(services);
+            services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
 
             services.AddAutoMapper(typeof(ParkingRightProfile));
             var prdbIntegrationUrl = Environment.GetEnvironmentVariable("PrdbIntegrationUri") ??
