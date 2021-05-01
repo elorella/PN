@@ -29,13 +29,11 @@ namespace ParkingRight.WebApi
         // This method gets called by the runtime. Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "ParkingRight API", Version = "v1"});
             });
-
-
+            
             RegisterSubmodules(services);
             services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
 
@@ -64,19 +62,22 @@ namespace ParkingRight.WebApi
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                //app.UseExceptionHandler("/error-local-development");
             }
             else
-            {app.UseExceptionHandler("/error");}
+            {
+               app.UseExceptionHandler("/error");
+            }
+
             app.UseHttpsRedirection();
 
             app.UseSwagger();
 
-            app.UseSwaggerUI(c =>
-            {
-                //c.RoutePrefix = "prod";
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ParkingRight API V1");
-            });
+            var swaggerUrl = "/Prod/swagger/v1/swagger.json";
+
+#if DEBUG
+            swaggerUrl = "/swagger/v1/swagger.json";
+#endif
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint(swaggerUrl, "ParkingRight API V1"); });
 
             app.UseHttpsRedirection();
 
@@ -90,7 +91,7 @@ namespace ParkingRight.WebApi
                 endpoints.MapGet("/",
                     async context =>
                     {
-                        await context.Response.WriteAsync("Welcome to running ASP.NET Core on AWS Lambda");
+                        await context.Response.WriteAsync("Welcome to ParkingRightWebApi ASP.NET Core on AWS Lambda");
                     });
             });
         }

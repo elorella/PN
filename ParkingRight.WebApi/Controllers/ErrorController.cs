@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace ParkingRight.WebApi.Controllers
 {
     [ApiController]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ErrorController : ControllerBase
     {
         [Route("error-local-development")]
-        public IActionResult ErrorLocalDevelopment(
-            [FromServices] IWebHostEnvironment webHostEnvironment)
+        public IActionResult ErrorLocalDevelopment([FromServices] IWebHostEnvironment webHostEnvironment)
         {
             if (webHostEnvironment.EnvironmentName != "Development")
                 throw new InvalidOperationException(
@@ -26,6 +26,7 @@ namespace ParkingRight.WebApi.Controllers
         [Route("error")]
         public IActionResult Error()
         {
+            //Error logging
             return Problem();
         }
     }

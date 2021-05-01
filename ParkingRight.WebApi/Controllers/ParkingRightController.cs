@@ -17,17 +17,22 @@ namespace ParkingRight.WebApi.Controllers
             _parkingRightProcessor = parkingRightProcessor;
         }
 
-        // GET parkingright/key
-        [HttpGet("{key}")]
-        public async Task<ActionResult<ParkingRightModel>> Get(string key)
+        /// <summary>
+        /// Retrieve the parking-right with the given key. 
+        /// </summary>
+        /// <param name="parkingRightKey"></param>
+        /// <returns></returns>
+        [HttpGet("{parkingRightKey}")]
+        [ProducesResponseType(typeof(ParkingRightModel), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ParkingRightModel), (int)HttpStatusCode.Accepted)]
+        public async Task<ActionResult<ParkingRightModel>> Get(string parkingRightKey)
         {
-            var parkingRightModel = await _parkingRightProcessor.GetParkingRight(key);
+            var parkingRightModel = await _parkingRightProcessor.GetParkingRight(parkingRightKey);
             return parkingRightModel == null
-                ? StatusCode((int) HttpStatusCode.NoContent, null)
+                ? StatusCode((int) HttpStatusCode.NotFound, null)
                 : StatusCode((int) HttpStatusCode.Accepted, parkingRightModel);
         }
 
-        // POST values
         /// <summary>
         ///     Creates a new parking right
         /// </summary>
@@ -42,13 +47,17 @@ namespace ParkingRight.WebApi.Controllers
             return StatusCode((int) HttpStatusCode.Created, parkingRightModel);
         }
 
-        //// PUT values/5
-        //[HttpPut("{parkingRightKey}")]
-        //public void Put(string parkingRightKey, [FromBody]string value)
-        //{
-        //}
+        /// <summary>
+        ///  Update parking right with the given key
+        /// </summary>
+        /// <param name="parkingRightKey"></param>
+        /// <param name="value"></param>
+        [HttpPut("{parkingRightKey}")]
+        public void Put(string parkingRightKey, [FromBody] ParkingRightModel value)
+        {
+            throw new NotImplementedException();
+        }
 
-        // DELETE api/values/parkingRightKey
         /// <summary>
         ///     The parking right with the given key will be cancelled.
         /// </summary>

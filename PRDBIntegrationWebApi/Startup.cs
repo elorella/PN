@@ -39,7 +39,7 @@ namespace PRDBIntegrationWebApi
                 endpoints.MapGet("/",
                     async context =>
                     {
-                        await context.Response.WriteAsync("Welcome to running ASP.NET Core on AWS Lambda");
+                        await context.Response.WriteAsync("Welcome to PRDBIntegrationWebApi ASP.NET Core on AWS Lambda");
                     });
             });
         }
