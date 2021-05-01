@@ -1,11 +1,11 @@
 {
   "resource": "/{proxy+}",
-  "path": "/api/values",
-  "httpMethod": "GET",
+  "path": "/api/ParkingRightRegistration",
+  "httpMethod": "Post",
   "headers": null,
   "queryStringParameters": null,
   "pathParameters": {
-    "proxy": "api/values"
+    "proxy": "api/ParkingRightRegistration"
   },
   "stageVariables": null,
   "requestContext": {
@@ -27,7 +27,7 @@
       "user": "AAAAAAAAAAAA"
     },
     "resourcePath": "/{proxy+}",
-    "httpMethod": "GET",
+    "httpMethod": "Post",
     "apiId": "t2yh6sjnmk"
   },
   "body": null

@@ -1,6 +1,7 @@
 using System;
 using Amazon;
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.Extensions.NETCore.Setup;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using ParkingRight.DataAccess;
 using ParkingRight.Domain;
 using ParkingRight.Domain.Profile;
+using ParkingRight.WebApi.Filters;
 
 namespace ParkingRight.WebApi
 {
@@ -33,23 +35,40 @@ namespace ParkingRight.WebApi
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "ParkingRight API", Version = "v1"});
             });
 
-            services.AddAWSService<IAmazonDynamoDB>();
-            services.AddDefaultAWSOptions(
-                new AWSOptions
-                {
-                    Region = RegionEndpoint.GetBySystemName("us-west-2")
-                });
+
             RegisterSubmodules(services);
+            services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
+
+            #region AWS
+
+            var awsOptions = Configuration.GetAWSOptions();
+            awsOptions.Region = RegionEndpoint.EUCentral1;
+            services.AddDefaultAWSOptions(awsOptions);
+            services.AddAWSService<IAmazonDynamoDB>();
+            services.AddScoped<IDynamoDBContext>(
+                provider => new DynamoDBContext(provider.GetService<IAmazonDynamoDB>()));
+
+            #endregion
+
             services.AddAutoMapper(typeof(ParkingRightProfile));
+            var prdbIntegrationUrl = Environment.GetEnvironmentVariable("PrdbIntegrationUri") ??
+                                     Configuration["ApiConfigs:PrdbIntegration:Uri"];
 
             services.AddHttpClient<IPrdbIntegrationProcessor, PrdbIntegrationProcessor>(c =>
-                c.BaseAddress = new Uri(Configuration["ApiConfigs:PrdbIntegration:Uri"]));
+                c.BaseAddress = new Uri(prdbIntegrationUrl));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                //app.UseExceptionHandler("/error-local-development");
+            }
+            else
+            {app.UseExceptionHandler("/error");}
+            app.UseHttpsRedirection();
 
             app.UseSwagger();
 

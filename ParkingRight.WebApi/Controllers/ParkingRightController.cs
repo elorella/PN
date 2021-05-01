@@ -7,7 +7,7 @@ using ParkingRight.Domain.Models;
 
 namespace ParkingRight.WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ParkingRightController : ControllerBase
     {
         private readonly IParkingRightProcessor _parkingRightProcessor;
@@ -19,15 +19,12 @@ namespace ParkingRight.WebApi.Controllers
 
         // GET parkingright/key
         [HttpGet("{key}")]
-        [ProducesResponseType(typeof(ParkingRightDto), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ParkingRightDto), (int) HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Get(string key)
+        public async Task<ActionResult<ParkingRightModel>> Get(string key)
         {
-            var result = await _parkingRightProcessor.GetParkingRight(key);
-
-            return result.IsSuccess
-                ? StatusCode((int) HttpStatusCode.OK, result)
-                : StatusCode((int) HttpStatusCode.NotFound, null);
+            var parkingRightModel = await _parkingRightProcessor.GetParkingRight(key);
+            return parkingRightModel == null
+                ? StatusCode((int) HttpStatusCode.NoContent, null)
+                : StatusCode((int) HttpStatusCode.Accepted, parkingRightModel);
         }
 
         // POST values
@@ -37,15 +34,12 @@ namespace ParkingRight.WebApi.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiServiceResult<string>), (int) HttpStatusCode.Created)]
-        [ProducesResponseType(typeof(ApiServiceResult<string>), (int) HttpStatusCode.UnprocessableEntity)]
-        public async Task<IActionResult> Post([FromBody] ParkingRightInsertRequest request)
+        [ProducesResponseType(typeof(ParkingRightModel), (int) HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(ParkingRightModel), (int) HttpStatusCode.UnprocessableEntity)]
+        public async Task<IActionResult> Post([FromBody] ParkingRightModel request)
         {
-            var key = await _parkingRightProcessor.SaveParkingRight(request);
-
-            return key.IsSuccess
-                ? StatusCode((int) HttpStatusCode.Created, key)
-                : StatusCode((int) HttpStatusCode.UnprocessableEntity, key);
+            var parkingRightModel = await _parkingRightProcessor.SaveParkingRight(request);
+            return StatusCode((int) HttpStatusCode.Created, parkingRightModel);
         }
 
         //// PUT values/5

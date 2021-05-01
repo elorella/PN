@@ -17,6 +17,10 @@
         "Policies": [
           "AWSLambda_FullAccess"
         ],
+        "Environment" : {
+      "Variables" : {
+        "PrdbIntegrationUri" : "https://7w4fawb1a7.execute-api.eu-central-1.amazonaws.com/Prod/" }
+    },        
         "Events": {
           "ProxyResource": {
             "Type": "Api",

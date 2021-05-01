@@ -21,31 +21,35 @@ namespace ParkingRight.Domain
             _prdbIntegrationProcessor = prdbIntegrationProcessor;
         }
 
-        public async Task<ApiServiceResult<ParkingRightDto>> GetParkingRight(string parkingRightKey)
+        public async Task<ParkingRightModel> GetParkingRight(string parkingRightKey)
         {
             var parkingRightEntity = await _parkingRightRepository.Get(parkingRightKey);
-            return new ApiServiceResult<ParkingRightDto>(_mapper.Map<ParkingRightDto>(parkingRightEntity),
-                ResponseCodes.Success);
+            return _mapper.Map<ParkingRightModel>(parkingRightEntity);
         }
 
-        public async Task<ApiServiceResult<string>> SaveParkingRight(ParkingRightInsertRequest request)
+        public async Task<ParkingRightModel> SaveParkingRight(ParkingRightModel parkingRight)
         {
-            var registrationRequest = _mapper.Map<ParkingRegistrationRequest>(request);
+            var entity = _mapper.Map<ParkingRightEntity>(parkingRight);
+            var isAdded = await _parkingRightRepository.Add(entity);
+            if (!isAdded)
+            {
+                // retry to save the record. 
+                throw new Exception("Failed to create a parking right.");
+            }
+
+            var registrationRequest = _mapper.Map<ParkingRegistration>(parkingRight);
             var registrationId = await _prdbIntegrationProcessor.Register(registrationRequest);
             if (!registrationId.HasValue)
-                return new ApiServiceResult<string>(string.Empty, ResponseCodes.RegistrationFailed);
+            {
+                throw new Exception("Failed to register parking spot to PRDB.");
+            }
 
-            var entity = _mapper.Map<ParkingRightEntity>(request);
-            await _parkingRightRepository.Add(entity);
+           
 
             // Publish notification 
 
-            return ApiServiceResult<string>.Success(entity.ParkingRightKey);
-        }
-
-        public async Task<ApiServiceResult<bool>> DeleteParkingRight(string parkingRightKey)
-        {
-            throw new NotImplementedException();
+            parkingRight.ParkingRightKey = entity.ParkingRightKey;
+            return parkingRight;
         }
     }
 }

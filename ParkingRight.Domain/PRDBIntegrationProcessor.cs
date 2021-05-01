@@ -18,12 +18,12 @@ namespace ParkingRight.Domain
             _logger = logger;
         }
 
-        public async Task<int?> Register(ParkingRegistrationRequest request)
+        public async Task<int?> Register(ParkingRegistration request)
         {
-            //Perhaps map internal request to external that has been shared with nuget 
+            //I used the internal request but it would be nicer to use external model that has been shared with nuget 
             var payload = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(request));
             var stringContent = new StringContent(payload, Encoding.UTF8, "application/json");
-            var response = await _client.PostAsync("/api/ParkingRightRegistration/", stringContent);
+            var response = await _client.PostAsync("api/ParkingRightRegistration/", stringContent);
 
             if (!response.IsSuccessStatusCode)
             {

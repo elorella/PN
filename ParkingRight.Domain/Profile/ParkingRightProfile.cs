@@ -7,13 +7,17 @@ namespace ParkingRight.Domain.Profile
     {
         public ParkingRightProfile()
         {
-            CreateMap<ParkingRightEntity, ParkingRightDto>().ReverseMap();
+            CreateMap<ParkingRightEntity, ParkingRightModel>();
 
-            CreateMap<ParkingRightInsertRequest, ParkingRegistrationRequest>();
+            CreateMap<ParkingRightModel, ParkingRightEntity>()
+                .ForMember(dest => dest.ParkingRightKey,
+                    (opt) =>
+                    {
+                        opt.MapFrom(src => string.Concat(src.LicensePlate, src.OperatorId, src.CustomerProfile));
+                    });
 
-            CreateMap<ParkingRightInsertRequest, ParkingRightEntity>();
-
-            
+            CreateMap<ParkingRightModel, ParkingRegistration>().ReverseMap()
+                .IgnoreAllPropertiesWithAnInaccessibleSetter();
         }
     }
 }

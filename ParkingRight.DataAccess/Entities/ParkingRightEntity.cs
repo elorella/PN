@@ -6,19 +6,17 @@ namespace ParkingRight.DataAccess.Entities
     [DynamoDBTable("ParkingRights")]
     public class ParkingRightEntity
     {
-        [DynamoDBHashKey]
-        public string ParkingRightKey =>
-            string.Concat(LicensePlate, ParkingZoneId.ToString(), CustomerProfileType.ToString());
+        [DynamoDBHashKey("ParkingRightKey")] public string ParkingRightKey { get; set; }
+        [DynamoDBProperty("LicensePlate")] public string LicensePlate { get; set; }
 
-        [DynamoDBGlobalSecondaryIndexHashKey] public string LicensePlate { get; set; }
+        [DynamoDBProperty] public int OperatorId { get; set; }
+        [DynamoDBProperty] public int ParkingZoneId { get; set; }
+        [DynamoDBProperty] public DateTime StartDate { get; set; }
+        [DynamoDBProperty] public DateTime EndDate { get; set; }
+        [DynamoDBProperty] public decimal AmountPaid { get; set; }
 
-        public int OperatorId { get; set; }
-        public int ParkingZoneId { get; set; }
-        public DateTimeOffset StartDate { get; set; }
-        public DateTimeOffset EndDate { get; set; }
-        public decimal AmountPaid { get; set; }
-        public int CustomerProfileType { get; set; }
-        public bool IsActive { get; set; }
-        public DateTimeOffset CreateDate { get; set; }
+        [DynamoDBProperty] public int CustomerProfileType { get; set; }
+        //public bool IsActive { get; set; }
+        //public DateTime CreateDate=> DateTime.Now;
     }
 }

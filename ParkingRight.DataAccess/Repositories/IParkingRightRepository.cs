@@ -7,10 +7,6 @@ namespace ParkingRight.DataAccess.Repositories
     {
         Task<ParkingRightEntity> Get(string key);
 
-        Task Add(ParkingRightEntity parkingRightEntity);
-        //Task<IEnumerable<ParkingRightEntity>> GetUsersRankedMoviesByMovieTitle(int userId, string movieName);
-//        Task UpdateMovie(ParkingRightEntity request);
-
-        //      Task<IEnumerable<ParkingRightEntity>> GetMovieRank(string movieName);
+        Task<bool> Add(ParkingRightEntity parkingRightEntity);
     }
 }

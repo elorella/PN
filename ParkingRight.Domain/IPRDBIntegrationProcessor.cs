@@ -5,6 +5,6 @@ namespace ParkingRight.Domain
 {
     public interface IPrdbIntegrationProcessor
     {
-        Task<int?> Register(ParkingRegistrationRequest request);
+        Task<int?> Register(ParkingRegistration request);
     }
 }

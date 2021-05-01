@@ -7,14 +7,14 @@ using Xunit;
 
 namespace PRDBIntegrationWebApi.Tests
 {
-    public class ValuesControllerTests
+    public class ParkingRightRegistrationControllerTests
     {
         [Fact]
         public async Task TestGet()
         {
             var lambdaFunction = new LambdaEntryPoint();
 
-            var requestStr = File.ReadAllText("./SampleRequests/ValuesController-Get.json");
+            var requestStr = File.ReadAllText("./SampleRequests/ParkingRightRegistrationController-Get.json");
             var request = JsonConvert.DeserializeObject<APIGatewayProxyRequest>(requestStr);
             var context = new TestLambdaContext();
             var response = await lambdaFunction.FunctionHandlerAsync(request, context);
