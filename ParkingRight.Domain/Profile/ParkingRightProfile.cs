@@ -16,8 +16,7 @@ namespace ParkingRight.Domain.Profile
                         opt.MapFrom(src => string.Concat(src.LicensePlate, src.OperatorId, src.CustomerProfile));
                     });
 
-            CreateMap<ParkingRightModel, ParkingRegistration>().ReverseMap()
-                .IgnoreAllPropertiesWithAnInaccessibleSetter();
+           
         }
     }
 }

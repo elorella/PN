@@ -6,6 +6,7 @@ using ParkingRight.DataAccess.Entities;
 using ParkingRight.DataAccess.Repositories;
 using ParkingRight.Domain.Models;
 using ParkingRight.Domain.Profile;
+using ParkingRight.Domain.SNS;
 using Xunit;
 
 namespace ParkingRight.Domain.Tests
@@ -24,37 +25,43 @@ namespace ParkingRight.Domain.Tests
         public async Task SaveParkingRightShouldTriggerSaveRepo()
         {
             var repo = new Mock<IParkingRightRepository>();
-            var integrationProcess = new Mock<IPrdbIntegrationProcessor>();
+            var sns = new Mock<ISnsConnector>();
 
             repo.Setup(m => m.Add(It.IsAny<ParkingRightEntity>()))
                 .Returns(() => Task.FromResult(true));
 
-            int? registrationResponse = 5;
-            integrationProcess.Setup(m => m.Register(It.IsAny<ParkingRegistration>()))
-                .Returns(() => Task.FromResult(registrationResponse));
+            sns.Setup(m => m.PublishMessage(
+                    It.IsAny<string>(), 
+                    It.IsAny<MessageType>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .Returns(() => Task.FromResult(true));
 
-            var parkingRightProcessor = new ParkingRightProcessor(repo.Object, _mapper, integrationProcess.Object);
+            var parkingRightProcessor = new ParkingRightProcessor(repo.Object, _mapper, sns.Object,new Mock<IConfigurationProvider>().Object);
             await parkingRightProcessor.SaveParkingRight(new ParkingRightModel());
 
             repo.Verify(r => r.Add(It.IsAny<ParkingRightEntity>()), Times.Once);
         }
 
-        [Fact(DisplayName = "PRDBIntegration shouldn't be triggered if repository fails to save parking right.")]
+        [Fact(DisplayName = "Sns message shouldn't be published if repository fails to save parking right.")]
         public async Task SaveParkingRightShouldntBeTriggered()
         {
             var repo = new Mock<IParkingRightRepository>();
-            var integrationProcess = new Mock<IPrdbIntegrationProcessor>();
+            var sns = new Mock<ISnsConnector>();
 
             repo.Setup(m => m.Add(It.IsAny<ParkingRightEntity>()))
                 .Returns(() => Task.FromResult(false));
 
-            var parkingRightProcessor =
-                new ParkingRightProcessor(repo.Object, new Mock<IMapper>().Object, integrationProcess.Object);
+            var parkingRightProcessor = new ParkingRightProcessor(repo.Object, _mapper, sns.Object, new Mock<IConfigurationProvider>().Object);
+
 
             await Assert.ThrowsAsync<Exception>(async () =>
                 await parkingRightProcessor.SaveParkingRight(new ParkingRightModel()));
 
-            integrationProcess.Verify(r => r.Register(It.IsAny<ParkingRegistration>()), Times.Never);
+            sns.Verify(r => r.PublishMessage(It.IsAny<string>(),
+                It.IsAny<MessageType>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
         }
     }
 }

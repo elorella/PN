@@ -8,6 +8,7 @@ using ParkingRight.DataAccess.Entities;
 using ParkingRight.DataAccess.Repositories;
 using ParkingRight.Domain.Models;
 using ParkingRight.Domain.Profile;
+using ParkingRight.Domain.SNS;
 using Xunit;
 
 namespace ParkingRight.Domain.Tests
@@ -15,7 +16,7 @@ namespace ParkingRight.Domain.Tests
     public class GetParkingRightTests
     {
         [Fact]
-        public async Task GetParkingRighShouldBeReturned()
+        public async Task GetParkingRightShouldBeReturned()
         {
             var key = "key";
             var entity = new ParkingRightEntity()
@@ -37,7 +38,10 @@ namespace ParkingRight.Domain.Tests
             var mapper = config.CreateMapper();
             var responseExpected = mapper.Map<ParkingRightModel>(entity);
 
-            var parkingRightProcessor = new ParkingRightProcessor(repo.Object, mapper, new Mock<IPrdbIntegrationProcessor>().Object);
+            var parkingRightProcessor = new ParkingRightProcessor(repo.Object, 
+                mapper,
+                new Mock<ISnsConnector>().Object,
+                new Mock<IConfigurationProvider>().Object);
 
             var response = await parkingRightProcessor.GetParkingRight(key);
             

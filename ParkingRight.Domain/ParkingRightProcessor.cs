@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
+using Newtonsoft.Json;
 using ParkingRight.DataAccess.Entities;
 using ParkingRight.DataAccess.Repositories;
 using ParkingRight.Domain.Models;
+using ParkingRight.Domain.SNS;
 
 namespace ParkingRight.Domain
 {
@@ -11,14 +13,17 @@ namespace ParkingRight.Domain
     {
         private readonly IMapper _mapper;
         private readonly IParkingRightRepository _parkingRightRepository;
-        private readonly IPrdbIntegrationProcessor _prdbIntegrationProcessor;
+        private readonly ISnsConnector _snsConnector;
+        private readonly IConfigurationProvider _configurationProvider;
 
-        public ParkingRightProcessor(IParkingRightRepository parkingRightRepository, IMapper mapper,
-            IPrdbIntegrationProcessor prdbIntegrationProcessor)
+        public ParkingRightProcessor(IParkingRightRepository parkingRightRepository,
+            IMapper mapper,
+            ISnsConnector snsConnector, IConfigurationProvider configurationProvider)
         {
             _parkingRightRepository = parkingRightRepository;
             _mapper = mapper;
-            _prdbIntegrationProcessor = prdbIntegrationProcessor;
+            _snsConnector = snsConnector;
+            _configurationProvider = configurationProvider;
         }
 
         public async Task<ParkingRightModel> GetParkingRight(string parkingRightKey)
@@ -27,26 +32,27 @@ namespace ParkingRight.Domain
             return _mapper.Map<ParkingRightModel>(parkingRightEntity);
         }
 
+         
         public async Task<ParkingRightModel> SaveParkingRight(ParkingRightModel parkingRight)
         {
             var entity = _mapper.Map<ParkingRightEntity>(parkingRight);
             var isAdded = await _parkingRightRepository.Add(entity);
             if (!isAdded)
-            {
                 // retry to save the record. 
                 throw new Exception("Failed to create a parking right.");
-            }
 
-            // Instead of Http, communication can be done over SQS; see architectural diagram 
-            var registrationRequest = _mapper.Map<ParkingRegistration>(parkingRight);
-            var registrationId = await _prdbIntegrationProcessor.Register(registrationRequest);
-            if (!registrationId.HasValue)
-            {
-                throw new Exception("Failed to register parking spot to PRDB.");
-            }
-
-           
             parkingRight.ParkingRightKey = entity.ParkingRightKey;
+
+            var payload = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(parkingRight));
+            var isPublished = await _snsConnector.PublishMessage(parkingRight.ParkingRightKey,
+                MessageType.ParkingRegistrationRequest,
+                payload, _configurationProvider.RegistrationTopicArn);
+
+            if (!isPublished)
+            {
+                throw new Exception("Failed to publish sns message!");
+            }
+
             return parkingRight;
         }
     }

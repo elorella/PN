@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using ParkingRight.Domain.SNS;
 
 namespace ParkingRight.Domain
 {
@@ -6,6 +7,8 @@ namespace ParkingRight.Domain
     {
         public static void RegisterTo(IServiceCollection services)
         {
+            services.AddTransient<ISnsConnector, SnsConnector>();
+            services.AddSingleton<IConfigurationProvider, ConfigurationProvider>();
             services.AddTransient<IParkingRightProcessor, ParkingRightProcessor>();
         }
     }
