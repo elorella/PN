@@ -12,12 +12,17 @@ namespace ParkingRight.Domain.Tests
 {
     public class SaveParkingRightTests
     {
+        private readonly IMapper _mapper;
+
+        public SaveParkingRightTests()
+        {
+            var config = new MapperConfiguration(cfg => cfg.AddProfile<ParkingRightProfile>());
+            _mapper = config.CreateMapper();
+        }
+
         [Fact(DisplayName = "Save parking right should be triggered with the repo-save function once.")]
         public async Task SaveParkingRightShouldTriggerSaveRepo()
         {
-            var config = new MapperConfiguration(cfg => cfg.AddProfile<ParkingRightProfile>());
-            var mapper = config.CreateMapper();
-
             var repo = new Mock<IParkingRightRepository>();
             var integrationProcess = new Mock<IPrdbIntegrationProcessor>();
 
@@ -28,9 +33,7 @@ namespace ParkingRight.Domain.Tests
             integrationProcess.Setup(m => m.Register(It.IsAny<ParkingRegistration>()))
                 .Returns(() => Task.FromResult(registrationResponse));
 
-            var parkingRightProcessor = new ParkingRightProcessor(repo.Object, mapper, integrationProcess.Object);
-
-
+            var parkingRightProcessor = new ParkingRightProcessor(repo.Object, _mapper, integrationProcess.Object);
             await parkingRightProcessor.SaveParkingRight(new ParkingRightModel());
 
             repo.Verify(r => r.Add(It.IsAny<ParkingRightEntity>()), Times.Once);

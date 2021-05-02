@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Castle.Core;
 using Moq;
+using Newtonsoft.Json;
 using ParkingRight.DataAccess.Entities;
 using ParkingRight.DataAccess.Repositories;
 using ParkingRight.Domain.Models;
@@ -36,11 +37,15 @@ namespace ParkingRight.Domain.Tests
             var mapper = config.CreateMapper();
             var responseExpected = mapper.Map<ParkingRightModel>(entity);
 
-            var parkingRightProcessor =
-                new ParkingRightProcessor(repo.Object, mapper, new Mock<IPrdbIntegrationProcessor>().Object);
+            var parkingRightProcessor = new ParkingRightProcessor(repo.Object, mapper, new Mock<IPrdbIntegrationProcessor>().Object);
 
             var response = await parkingRightProcessor.GetParkingRight(key);
-            Assert.Equal(responseExpected,response);
+            
+            var responseExpectedJson = JsonConvert.SerializeObject(responseExpected);
+            var responseJson =  JsonConvert.SerializeObject(response);
+
+            Assert.Equal(responseExpectedJson, responseJson);
+
 
         }
     }
