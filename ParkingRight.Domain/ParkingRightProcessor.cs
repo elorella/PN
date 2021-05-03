@@ -36,12 +36,7 @@ namespace ParkingRight.Domain
         public async Task<ParkingRightModel> SaveParkingRight(ParkingRightModel parkingRight)
         {
             var entity = _mapper.Map<ParkingRightEntity>(parkingRight);
-            var isAdded = await _parkingRightRepository.Add(entity);
-            if (!isAdded)
-                // retry to save the record. 
-                throw new Exception("Failed to create a parking right.");
-
-            parkingRight.ParkingRightKey = entity.ParkingRightKey;
+           parkingRight.ParkingRightKey = entity.ParkingRightKey;
 
             var payload = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(parkingRight));
             var isPublished = await _snsConnector.PublishMessage(parkingRight.ParkingRightKey,
@@ -52,6 +47,11 @@ namespace ParkingRight.Domain
             {
                 throw new Exception("Failed to publish sns message!");
             }
+
+            var isAdded = await _parkingRightRepository.Add(entity);
+            if (!isAdded)
+                // retry to save the record. 
+                throw new Exception("Failed to create a parking right.");
 
             return parkingRight;
         }

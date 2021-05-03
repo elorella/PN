@@ -43,25 +43,25 @@ namespace ParkingRight.Domain.Tests
             repo.Verify(r => r.Add(It.IsAny<ParkingRightEntity>()), Times.Once);
         }
 
-        [Fact(DisplayName = "Sns message shouldn't be published if repository fails to save parking right.")]
-        public async Task SaveParkingRightShouldntBeTriggered()
+        [Fact(DisplayName = "Entity shouldn't be saved if message is not published.")]
+        public async Task ParkingRightShouldntBeSavedIfMessageIsnotPublished()
         {
             var repo = new Mock<IParkingRightRepository>();
             var sns = new Mock<ISnsConnector>();
 
-            repo.Setup(m => m.Add(It.IsAny<ParkingRightEntity>()))
+            sns.Setup(m => m.PublishMessage(
+                    It.IsAny<string>(),
+                    It.IsAny<MessageType>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
                 .Returns(() => Task.FromResult(false));
-
+           
             var parkingRightProcessor = new ParkingRightProcessor(repo.Object, _mapper, sns.Object, new Mock<IConfigurationProvider>().Object);
-
-
+            
             await Assert.ThrowsAsync<Exception>(async () =>
                 await parkingRightProcessor.SaveParkingRight(new ParkingRightModel()));
 
-            sns.Verify(r => r.PublishMessage(It.IsAny<string>(),
-                It.IsAny<MessageType>(),
-                It.IsAny<string>(),
-                It.IsAny<string>()), Times.Never);
+            repo.Verify(r => r.Add(It.IsAny<ParkingRightEntity>()), Times.Never);
         }
     }
 }
