@@ -5,7 +5,7 @@ namespace ParkingRight.DataAccess
 {
     public static class DataAccessModule
     {
-        public static void RegisterTo(IServiceCollection services)
+        public static void RegisterDataAccessModule(this IServiceCollection services)
         {
             services.AddTransient<IParkingRightRepository, ParkingRightRepository>();
         }

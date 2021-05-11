@@ -5,7 +5,7 @@ namespace ParkingRight.Domain
 {
     public static class DomainModule
     {
-        public static void RegisterTo(IServiceCollection services)
+        public static void RegisterDomainModule(this IServiceCollection services)
         {
             services.AddTransient<ISnsConnector, SnsConnector>();
             services.AddSingleton<IConfigurationProvider, ConfigurationProvider>();

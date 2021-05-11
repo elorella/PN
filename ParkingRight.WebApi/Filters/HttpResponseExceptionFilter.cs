@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace ParkingRight.WebApi.Filters
 {
+    //IExceptionFilter
     public class HttpResponseExceptionFilter : IActionFilter, IOrderedFilter
     {
         public void OnActionExecuting(ActionExecutingContext context)

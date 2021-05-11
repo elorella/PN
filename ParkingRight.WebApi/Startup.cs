@@ -47,6 +47,10 @@ namespace ParkingRight.WebApi
 
             #endregion
 
+
+            services.RegisterDomainModule();
+            services.RegisterDataAccessModule();
+                
             RegisterSubmodules(services);
             services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
 
@@ -94,11 +98,6 @@ namespace ParkingRight.WebApi
                     });
             });
         }
-
-        protected virtual void RegisterSubmodules(IServiceCollection services)
-        {
-            DomainModule.RegisterTo(services);
-            DataAccessModule.RegisterTo(services);
-        }
+        
     }
 }
